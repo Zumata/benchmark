@@ -18,7 +18,6 @@ func BenchmarkMultiplyBigFloat(b *testing.B) {
 }
 
 func BenchmarkMultiplyBigFloatWithoutNew(b *testing.B) {
-
 	bigFloatStartFloat := big.NewFloat(StartFloat)
 	bigFloatFactor := big.NewFloat(Factor)
 
@@ -34,7 +33,6 @@ func BenchmarkMultiplyDecimal(b *testing.B) {
 }
 
 func BenchmarkMultiplyDecimalWithoutNew(b *testing.B) {
-
 	decimalStartFloat := decimal.NewFromFloat(StartFloat)
 	decimalFactor := decimal.NewFromFloat(Factor)
 
@@ -66,7 +64,6 @@ func BenchmarkAddBigFloat(b *testing.B) {
 }
 
 func BenchmarkAddBigFloatWithoutNew(b *testing.B) {
-
 	bigFloatStartFloat := big.NewFloat(StartFloat)
 	bigFloatFactor := big.NewFloat(Factor)
 
@@ -82,7 +79,6 @@ func BenchmarkAddDecimal(b *testing.B) {
 }
 
 func BenchmarkAddDecimalWithoutNew(b *testing.B) {
-
 	decimalStartFloat := decimal.NewFromFloat(StartFloat)
 	decimalFactor := decimal.NewFromFloat(Factor)
 

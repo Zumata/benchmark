@@ -7,33 +7,26 @@ import (
 )
 
 const (
-	StartFloat float64 = 10000.55
-	Factor     float64 = 0.333
+	StartFloat = 10000.55
+	Factor     = 0.333
 )
 
 func MultiplyBigFloat() (calculated *big.Float) {
-
 	bigFloatStartFloat := big.NewFloat(StartFloat)
 	bigFloatFactor := big.NewFloat(Factor)
 
-	calculated = big.NewFloat(0)
-
-	calculated = calculated.Mul(bigFloatStartFloat, bigFloatFactor)
+	calculated = bigFloatStartFloat.Mul(bigFloatStartFloat, bigFloatFactor)
 
 	return
 }
 
 func MultiplyBigFloatWithoutNew(bigFloatStartFloat, bigFloatFactor *big.Float) (calculated *big.Float) {
-
-	calculated = big.NewFloat(0)
-
-	calculated = calculated.Mul(bigFloatStartFloat, bigFloatFactor)
+	calculated = bigFloatStartFloat.Mul(bigFloatStartFloat, bigFloatFactor)
 
 	return
 }
 
 func MultiplyDecimal() (calculated decimal.Decimal) {
-
 	decimalStartFloat := decimal.NewFromFloat(StartFloat)
 	decimalFactor := decimal.NewFromFloat(Factor)
 
@@ -43,52 +36,39 @@ func MultiplyDecimal() (calculated decimal.Decimal) {
 }
 
 func MultiplyDecimalWithoutNew(decimalStartFloat, decimalFactor decimal.Decimal) (calculated decimal.Decimal) {
-
 	calculated = decimalStartFloat.Mul(decimalFactor)
 
 	return
 }
 
 func MultiplyFloat64() (calculated float64) {
-
 	calculated = StartFloat * Factor
 
 	return
 }
 
 func MultiplyFloat32() (calculated float32) {
-
-	float32StartFloat := float32(StartFloat)
-	float32Factor := float32(Factor)
-
-	calculated = float32StartFloat * float32Factor
+	calculated = StartFloat * Factor
 
 	return
 }
 
 func AddBigFloat() (calculated *big.Float) {
-
 	bigFloatStartFloat := big.NewFloat(StartFloat)
 	bigFloatFactor := big.NewFloat(Factor)
 
-	calculated = big.NewFloat(0)
-
-	calculated = calculated.Add(bigFloatStartFloat, bigFloatFactor)
+	calculated = bigFloatStartFloat.Add(bigFloatStartFloat, bigFloatFactor)
 
 	return
 }
 
 func AddBigFloatWithoutNew(bigFloatStartFloat, bigFloatFactor *big.Float) (calculated *big.Float) {
-
-	calculated = big.NewFloat(0)
-
-	calculated = calculated.Add(bigFloatStartFloat, bigFloatFactor)
+	calculated = bigFloatStartFloat.Add(bigFloatStartFloat, bigFloatFactor)
 
 	return
 }
 
 func AddDecimal() (calculated decimal.Decimal) {
-
 	decimalStartFloat := decimal.NewFromFloat(StartFloat)
 	decimalFactor := decimal.NewFromFloat(Factor)
 
@@ -98,25 +78,19 @@ func AddDecimal() (calculated decimal.Decimal) {
 }
 
 func AddDecimalWithoutNew(decimalStartFloat, decimalFactor decimal.Decimal) (calculated decimal.Decimal) {
-
 	calculated = decimalStartFloat.Add(decimalFactor)
 
 	return
 }
 
 func AddFloat64() (calculated float64) {
-
 	calculated = StartFloat + Factor
 
 	return
 }
 
 func AddFloat32() (calculated float32) {
-
-	float32StartFloat := float32(StartFloat)
-	float32Factor := float32(Factor)
-
-	calculated = float32StartFloat + float32Factor
+	calculated = StartFloat + Factor
 
 	return
 }
