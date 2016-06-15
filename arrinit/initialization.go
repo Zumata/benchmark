@@ -1,7 +1,7 @@
 package arrinit
 
 const(
-    SampleString = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    SampleString string = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 )
 
 func AppendStringArrayWithCapZero(appendCount int) {
