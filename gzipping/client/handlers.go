@@ -10,10 +10,16 @@ import (
 	"time"
 )
 
-type testResults struct {
-	Iterations    int     `json:"iterations"`
-	JSONInSeconds float64 `json:"json_in_seconds"`
-	GZIPInSeconds float64 `json:"gzip_in_seconds"`
+type combinedResults struct {
+	Iterations  int         `json:"iterations"`
+	JSONResults *runResults `json:"json_results"`
+	GZIPResults *runResults `json:"gzip_results"`
+}
+
+type runResults struct {
+	AverageInSeconds float64 `json:"average_in_seconds"`
+	FastestInSeconds float64 `json:"fastest_in_seconds"`
+	SlowestInSeconds float64 `json:"slowest_in_seconds"`
 }
 
 func dataCompressionTestHandler(w http.ResponseWriter, r *http.Request) {
@@ -26,28 +32,23 @@ func dataCompressionTestHandler(w http.ResponseWriter, r *http.Request) {
 		parsedIterations = iterations
 	}
 
-	// Without GZIP
-	startTime := time.Now()
+	//////////////////
+	// Without GZIP //
+	//////////////////
 
-	err := performRequests(serverURLRoot+"raw_data", parsedIterations)
+	jsonRunResults, err := performRequests(serverURLRoot+"raw_data", parsedIterations)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		w.WriteHeader(http.StatusInternalServerError)
 
 		return
 	}
-
-	jsonInSeconds := time.Now().Sub(startTime).Seconds()
-
-	log.Printf("%v iterations WITHOUT gzip completed in %v seconds", parsedIterations, jsonInSeconds)
 
 	///////////////
 	// With GZIP //
 	///////////////
 
-	startTime = time.Now()
-
-	err = performRequests(serverURLRoot+"gzipped_data", parsedIterations)
+	gzipRunResults, err := performRequests(serverURLRoot+"gzipped_data", parsedIterations)
 	if err != nil {
 		w.Write([]byte(err.Error()))
 		w.WriteHeader(http.StatusInternalServerError)
@@ -55,14 +56,10 @@ func dataCompressionTestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	gzipInSeconds := time.Now().Sub(startTime).Seconds()
-
-	log.Printf("%v iterations WITH gzip completed in %v seconds", parsedIterations, gzipInSeconds)
-
-	results := testResults{
-		Iterations:    parsedIterations,
-		JSONInSeconds: jsonInSeconds,
-		GZIPInSeconds: gzipInSeconds,
+	results := combinedResults{
+		Iterations:  parsedIterations,
+		JSONResults: jsonRunResults,
+		GZIPResults: gzipRunResults,
 	}
 
 	resultsBytes, err := json.Marshal(results)
@@ -79,36 +76,49 @@ func dataCompressionTestHandler(w http.ResponseWriter, r *http.Request) {
 	return
 }
 
-func gzippedDataTestHandler(w http.ResponseWriter, r *http.Request) {
-	// With GZIP
-	startTime := time.Now()
-	performRequests(serverURLRoot+"gzipped_data", iterations)
-	timeInSeconds := time.Now().Sub(startTime).Seconds()
-
-	log.Printf("%v iterations WITH gzip completed in %v seconds", iterations, timeInSeconds)
-}
-
-func performRequests(serverURL string, requestedIterations int) error {
+func performRequests(serverURL string, requestedIterations int) (*runResults, error) {
 	client := &http.Client{}
 
 	request, err := http.NewRequest("GET", serverURL, nil)
 	if err != nil {
-		return fmt.Errorf("unable to construct http request due to %v", err)
+		return nil, fmt.Errorf("unable to construct http request due to %v", err)
 	}
 	// Force no caching
 	request.Header.Set("Cache-Control", "no-cache, no-store, must-revalidate")
 
-	for i := 0; i < requestedIterations; i++ {
-		response, err := client.Do(request)
-		if err != nil {
-			return fmt.Errorf("unable to complete http get due to %v", err)
-		}
-		if response.StatusCode != http.StatusOK {
-			return errors.New("unable to get a 200 OK response from the server")
-		}
+	currentRunResults := &runResults{
+		FastestInSeconds: 1000000000,  // Just some large number
+		SlowestInSeconds: -1000000000, // Just some small number
 	}
 
-	return nil
+	totalRunTime := float64(0)
+	for i := 0; i < requestedIterations; i++ {
+		startTime := time.Now()
+
+		response, err := client.Do(request)
+		if err != nil {
+			return nil, fmt.Errorf("unable to complete http get due to %v", err)
+		}
+		if response.StatusCode != http.StatusOK {
+			return nil, errors.New("unable to get a 200 OK response from the server")
+		}
+
+		timeInSeconds := time.Now().Sub(startTime).Seconds()
+
+		// Populate timings if needed
+		if timeInSeconds < currentRunResults.FastestInSeconds {
+			currentRunResults.FastestInSeconds = timeInSeconds
+		}
+		if timeInSeconds > currentRunResults.SlowestInSeconds {
+			currentRunResults.SlowestInSeconds = timeInSeconds
+		}
+
+		totalRunTime += timeInSeconds
+	}
+
+	currentRunResults.AverageInSeconds = totalRunTime / float64(requestedIterations)
+
+	return currentRunResults, nil
 }
 
 func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
